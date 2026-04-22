@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Services Map</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-brand">
+            <div class="header-logo">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#60a5fa" />
+                            <stop offset="100%" stop-color="#4ade80" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Location pin -->
+                    <path d="M13 2C9.69 2 7 4.69 7 8c0 4.5 6 14 6 14s6-9.5 6-14c0-3.31-2.69-6-6-6z" fill="white"
+                        opacity="0.95" />
+                    <!-- Medical cross inside pin -->
+                    <rect x="11.5" y="5.5" width="3" height="5" rx="0.8" fill="url(#logoGrad)" />
+                    <rect x="10" y="7" width="6" height="2" rx="0.8" fill="url(#logoGrad)" />
+                </svg>
+            </div>
+            <div>
+                <div class="header-title">Health Services Map</div>
+            </div>
+        </div>
+        <div class="header-status">
+            <div class="status-badge" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span>Checking connection...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-tab="report">📝 Map Health Facility</button>
+                <button class="sidebar-tab" data-tab="list">📋 List of Health Facilities</button>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Report Form Tab -->
+                <div class="tab-content active" id="tab-report">
+                    <div class="report-form">
+                        <div class="form-header">
+                            <h2>Add Nearby Health Facility</h2>
+                            <p>Pin the location of a nearby health facility on the map and submit its details. It will
+                                be published to the map via Re:Earth CMS to help others in the community find essential
+                                health services.</p>
+                        </div>
+
+                        <form id="reportForm">
+                            <div class="form-group">
+                                <label class="form-label">Select Facility Category *</label>
+                                <div class="category-grid">
+                                    <div class="category-option" data-category="hospital">
+                                        <div class="category-icon">🏥</div>
+                                        <div class="category-name">Hospital</div>
+                                    </div>
+                                    <div class="category-option" data-category="clinic">
+                                        <div class="category-icon">🩺</div>
+                                        <div class="category-name">Clinic</div>
+                                    </div>
+                                    <div class="category-option" data-category="pharmacy">
+                                        <div class="category-icon">💊</div>
+                                        <div class="category-name">Pharmacy</div>
+                                    </div>
+                                    <div class="category-option" data-category="laboratory">
+                                        <div class="category-icon">🔬</div>
+                                        <div class="category-name">Laboratory</div>
+                                    </div>
+                                    <div class="category-option" data-category="dental">
+                                        <div class="category-icon">🦷</div>
+                                        <div class="category-name">Dental</div>
+                                    </div>
+                                    <div class="category-option" data-category="other">
+                                        <div class="category-icon">📍</div>
+                                        <div class="category-name">Other</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="category" name="category" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Select Location *</label>
+                                <div class="location-picker" id="locationPicker">
+                                    <div class="location-icon">🗺️</div>
+                                    <div class="location-text">Click on the map to select a location</div>
+                                </div>
+                                <input type="hidden" id="latitude" name="latitude" required>
+                                <input type="hidden" id="longitude" name="longitude" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Facility Name *</label>
+                                <input type="text" class="form-input" id="name" name="name"
+                                    placeholder="e.g., Muhimbili Hospital" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-input form-textarea" id="description" name="description"
+                                    placeholder="Please provide details of the facility"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Facility Address</label>
+                                <input type="text" class="form-input" id="address" name="address"
+                                    placeholder="e.g., 123 Main St, City, Country">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="text" class="form-input" id="phone" name="phone"
+                                    placeholder="e.g., +123 456 7890">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Status *</label>
+                                <select class="form-input" id="status" name="status" required>
+                                    <option value="" disabled selected>Select status</option>
+                                    <option value="open">Open</option>
+                                    <option value="closed">Closed</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Services *</label>
+                                <div class="multi-select-box" id="services-box">
+                                    <label><input type="checkbox" name="services"
+                                            value="pediatrics"><span>Pediatrics</span></label>
+                                    <label><input type="checkbox" name="services" value="emergency"><span>Emergency
+                                            Care</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="pharmacy"><span>Pharmacy</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="outpatient"><span>Outpatient</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="dental"><span>Dental</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="medical_surgical_services"><span>Medical & Surgical
+                                            Services</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="maternity"><span>Maternity</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="diagnostics_imaging"><span>Diagnostics & Imaging</span></label>
+                                    <label><input type="checkbox" name="services" value="mental_health"><span>Mental
+                                            Health</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="rehabilitation"><span>Rehabilitation</span></label>
+                                    <label><input type="checkbox" name="services"
+                                            value="others"><span>Others</span></label>
+                                </div>
+                            </div>
+
+
+                            <div style="display:flex; gap:12px;">
+                                <div class="form-group" style="flex:1; min-width:0;">
+                                    <label class="form-label">Emergency Service</label>
+                                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                        <input type="checkbox" id="isEmergency" name="isEmergency" value="true">
+                                        <span>Available</span>
+                                    </label>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:0;">
+                                    <label class="form-label">Open 24 Hours</label>
+                                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                        <input type="checkbox" id="is24Hours" name="is24Hours" value="true">
+                                        <span>Open 24 Hours</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Add Photos</label>
+                                <div class="photo-upload" id="photoUpload">
+                                    <label class="photo-add">
+                                        <input type="file" accept="image/*" multiple hidden id="photoInput">
+                                        <span class="photo-add-icon">📷</span>
+                                        <span class="photo-add-text">Add</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                                Submit
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- List Tab -->
+                <div class="tab-content" id="tab-list" style="display: none;">
+                    <div class="sidebar-tab">
+                        <div class="sidebar-header">
+                            <h2>Health Facilities Overview</h2>
+                            <p>A summary of all health facilities submitted to the map</p>
+                            <div class="sidebar-stats">
+                                <div class="sidebar-stat-item">
+                                    <div class="sidebar-stat-value" id="totalCount">0</div>
+                                    <div class="sidebar-stat-label">Total</div>
+                                </div>
+                                <div class="sidebar-stat-divider"></div>
+                                <div class="sidebar-stat-item">
+                                    <div class="sidebar-stat-value open" id="openCount">0</div>
+                                    <div class="sidebar-stat-label">Open</div>
+                                </div>
+                                <div class="sidebar-stat-divider"></div>
+                                <div class="sidebar-stat-item">
+                                    <div class="sidebar-stat-value closed" id="closedCount">0</div>
+                                    <div class="sidebar-stat-label">Closed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="stats-divider">
+                    <div class="reports-list">
+                        <div class="reports-filter">
+                            <button class="filter-chip active" data-filter="all">All</button>
+                            <button class="filter-chip" data-filter="hospital">🏥 Hospital</button>
+                            <button class="filter-chip" data-filter="clinic">🩺 Clinic</button>
+                            <button class="filter-chip" data-filter="pharmacy">💊 Pharmacy</button>
+                            <button class="filter-chip" data-filter="laboratory">🔬 Laboratory</button>
+                            <button class="filter-chip" data-filter="dental">🦷 Dental</button>
+                            <button class="filter-chip" data-filter="other">📍 Other</button>
+                        </div>
+                        <div id="facilitiesList"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div id="map"></div>
+
+            <div class="data-source" id="dataSource"> </div>
+
+            <!-- Map Controls -->
+            <div class="map-controls">
+                <button class="map-control-btn" id="locateBtn" title="現在地">📍</button>
+                <button class="map-control-btn" id="refreshBtn" title="更新">🔄</button>
+                <div style="position: relative;">
+                    <button class="map-control-btn" id="layersBtn" title="レイヤー">🗂️</button>
+                    <div class="layer-panel" id="layerPanel">
+                        <div class="layer-panel-title">Map Style</div>
+                        <div class="layer-option active" data-layer="street">
+                            <div class="layer-thumb" style="background: #e8f4ea;">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+                                    <rect width="36" height="36" fill="#aad3b5" />
+                                    <rect x="0" y="14" width="36" height="8" fill="#f5f5f5" />
+                                    <rect x="14" y="0" width="8" height="36" fill="#f5f5f5" />
+                                    <rect x="0" y="16" width="36" height="4" fill="#e0e0e0" />
+                                    <rect x="16" y="0" width="4" height="36" fill="#e0e0e0" />
+                                </svg>
+                            </div>
+                            <div class="layer-info">
+                                <div class="layer-name">Street</div>
+                                <div class="layer-desc">OpenStreetMap</div>
+                            </div>
+                        </div>
+                        <div class="layer-option" data-layer="satellite">
+                            <div class="layer-thumb" style="background: #2d5a27;">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+                                    <rect width="36" height="36" fill="#3a6b35" />
+                                    <rect x="0" y="20" width="36" height="16" fill="#8b7355" />
+                                    <rect x="8" y="10" width="20" height="14" fill="#4a7c44" />
+                                    <rect x="2" y="24" width="12" height="8" fill="#9e8060" />
+                                    <rect x="16" y="22" width="18" height="10" fill="#7a6045" />
+                                </svg>
+                            </div>
+                            <div class="layer-info">
+                                <div class="layer-name">Satellite</div>
+                                <div class="layer-desc">ESRI World Imagery</div>
+                            </div>
+                        </div>
+                        <div class="layer-option" data-layer="terrain">
+                            <div class="layer-thumb" style="background: #cde0a0;">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+                                    <rect width="36" height="36" fill="#b5d080" />
+                                    <polygon points="0,36 12,18 24,28 36,10 36,36" fill="#8fba50" />
+                                    <polygon points="10,36 20,20 30,30 36,22 36,36" fill="#6a9a30" opacity="0.6" />
+                                </svg>
+                            </div>
+                            <div class="layer-info">
+                                <div class="layer-name">Terrain</div>
+                                <div class="layer-desc">OpenTopoMap</div>
+                            </div>
+                        </div>
+                        <div class="layer-option" data-layer="dark">
+                            <div class="layer-thumb" style="background: #1a1a2e;">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+                                    <rect width="36" height="36" fill="#1a1a2e" />
+                                    <rect x="0" y="14" width="36" height="8" fill="#2a2a3e" />
+                                    <rect x="14" y="0" width="8" height="36" fill="#2a2a3e" />
+                                    <rect x="0" y="16" width="36" height="4" fill="#3a3a5e" />
+                                    <rect x="16" y="0" width="4" height="36" fill="#3a3a5e" />
+                                </svg>
+                            </div>
+                            <div class="layer-info">
+                                <div class="layer-name">Dark</div>
+                                <div class="layer-desc">CartoDB Dark Matter</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="map-legend">
+                <div class="legend-title">Legend</div>
+                <div class="legend-item">
+                    <div class="legend-marker" style="background: var(--danger-red);">🏥</div>
+                    <span class="legend-label">Hospital</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-marker" style="background: var(--warning-amber);">🩺</div>
+                    <span class="legend-label">Clinic</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-marker" style="background: #8b4513;">💊</div>
+                    <span class="legend-label">Pharmacy</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-marker" style="background: #3b82f6;">🔬</div>
+                    <span class="legend-label">Laboratory</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-marker" style="background: #a855f7;">🦷</div>
+                    <span class="legend-label">Dental</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-marker" style="background: var(--text-secondary);">📍</div>
+                    <span class="legend-label">Other</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <button class="modal-close" id="modalClose">✕</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon"></div>
+                <div>
+                    <div class="modal-title" id="modalTitle"></div>
+                    <div class="modal-subtitle" id="modalSubtitle"></div>
+                </div>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-meta" id="modalMeta"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✓</span>
+        <span class="toast-message" id="toastMessage">投稿が送信されました</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">送信中...</div>
+    </div>
+
+    <script>
+        // ============================================
+        // Re:Earth CMS API Configuration - 実API設定
+        // ============================================
+        const CMS_CONFIG = {
+            // 実際のRe:Earth CMS APIエンドポイント
+            baseUrl: 'https://api.cms.reearth.io',
+
+            // Public API エンドポイント (GET用 - 認証不要)
+            endpoints: {
+                healthFacilities: '/api/p/Beatrice/assignment/health-services',
+                assets: '/api/p/Beatrice/assignment/assets'
+            },
+
+            // ローカルサーバーAPI (POST用)
+            // インテグレーショントークンはサーバー側で管理
+            serverApi: {
+                baseUrl: '',  // 同一オリジン（空文字で現在のホスト）
+                // 別サーバーの場合は 'http://localhost:3000' などを指定
+                endpoints: {
+                    facilities: '/api/facilities',
+                    assets: '/api/assets',
+                    assetsMultiple: '/api/assets/multiple',
+                    health: '/api/health',
+                    configStatus: '/api/config/status'
+                }
+            }
+        };
+
+        // ============================================
+        // Re:Earth CMS API Client
+        // ============================================
+        class ReEarthCMSClient {
+            constructor(config) {
+                this.config = config;
+                this.isLiveData = false;
+            }
+
+            // 危険箇所データ取得
+            async getHealthServiceFacilities() {
+                const url = `${this.config.baseUrl}${this.config.endpoints.healthFacilities}`;
+                console.log(`[CMS] GET ${url}`);
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('[CMS] Live data received:', data);
+                    this.isLiveData = true;
+                    return this.getDemoData();
+
+                    // return this.normalizeApiResponse(data);
+
+                } catch (error) {
+                    console.warn('[CMS] API error, using demo data:', error.message);
+                    this.isLiveData = false;
+                    return this.getDemoData();
+                }
+            }
+
+            // アセットデータ取得
+            async getAssets() {
+                const url = `${this.config.baseUrl}${this.config.endpoints.assets}`;
+                console.log(`[CMS] GET ${url}`);
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.warn('[CMS] Assets API error:', error.message);
+                    return { results: [] };
+                }
+            }
+
+            // サーバーAPIの設定状態を確認
+            async checkServerConfig() {
+                const serverBase = this.config.serverApi?.baseUrl || '';
+                console.log(`[CMS] Checking server config at ${serverBase}${this.config.serverApi.endpoints.configStatus}`);
+                const url = `${serverBase}${this.config.serverApi.endpoints.configStatus}`;
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) return { ready: false };
+                    return await response.json();
+                } catch (error) {
+                    console.warn('[CMS] Server config check failed:', error.message);
+                    return { ready: false, error: error.message };
+                }
+            }
+
+            // サーバーAPI経由で新規アイテムを作成
+            async createItem(fields) {
+                const serverBase = this.config.serverApi?.baseUrl || '';
+                const url = `${serverBase}${this.config.serverApi.endpoints.facilities}`;
+
+                console.log(`[CMS] POST ${url}`);
+                console.log('[CMS] Fields:', fields);
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ fields })
+                    });
+
+                    console.log(`[CMS] Response status: ${response.status}`);
+
+                    const responseData = await response.json();
+                    console.log('[CMS] Response data:', responseData);
+
+                    if (!response.ok) {
+                        throw new Error(responseData.message || `HTTP ${response.status}`);
+                    }
+
+                    return responseData.data || responseData;
+                } catch (error) {
+                    console.error('[CMS] Create item error:', error);
+                    throw error;
+                }
+            }
+
+            // サーバーAPI経由でアセット（画像）をアップロード
+            async uploadAsset(file) {
+                const serverBase = this.config.serverApi?.baseUrl || '';
+                const url = `${serverBase}${this.config.serverApi.endpoints.assets}`;
+
+                console.log(`[CMS] POST ${url} (asset upload)`);
+                console.log('[CMS] File:', file.name, file.type, file.size);
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    console.log(`[CMS] Response status: ${response.status}`);
+
+                    const responseData = await response.json();
+                    console.log('[CMS] Response data:', responseData);
+
+                    if (!response.ok) {
+                        throw new Error(responseData.message || `HTTP ${response.status}`);
+                    }
+
+                    return responseData.data || responseData;
+                } catch (error) {
+                    console.error('[CMS] Upload asset error:', error);
+                    throw error;
+                }
+            }
+
+            // 複数アセットをアップロード
+            async uploadAssets(files) {
+                const serverBase = this.config.serverApi?.baseUrl || '';
+                const url = `${serverBase}${this.config.serverApi.endpoints.assetsMultiple}`;
+
+                console.log(`[CMS] POST ${url} (multiple assets upload)`);
+                console.log('[CMS] Files count:', files.length);
+
+                try {
+                    const formData = new FormData();
+                    files.forEach(file => {
+                        formData.append('files', file);
+                    });
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    console.log(`[CMS] Response status: ${response.status}`);
+
+                    const responseData = await response.json();
+                    console.log('[CMS] Response data:', responseData);
+
+                    if (!response.ok) {
+                        throw new Error(responseData.message || `HTTP ${response.status}`);
+                    }
+
+                    return responseData;
+                } catch (error) {
+                    console.error('[CMS] Upload assets error:', error);
+                    throw error;
+                }
+            }
+
+            // APIレスポンスを正規化
+            normalizeApiResponse(data) {
+                // Re:Earth CMS Public APIのレスポンス形式に対応
+                // 形式: { results: [...], totalCount: n, ... } または配列直接
+
+                let items = [];
+
+                if (Array.isArray(data)) {
+                    items = data;
+                } else if (data.results && Array.isArray(data.results)) {
+                    items = data.results;
+                } else if (data.items && Array.isArray(data.items)) {
+                    items = data.items;
+                }
+
+                // 各アイテムのフィールドを正規化
+                const normalizedItems = items.map(item => this.normalizeItem(item));
+
+                return {
+                    items: normalizedItems,
+                    totalCount: data.totalCount || normalizedItems.length
+                };
+            }
+
+            // 個別アイテムの正規化
+            normalizeItem(item) {
+                // Re:Earth CMSのアイテム構造に対応
+                // フィールドは直接プロパティとして、または fields 配列として返される可能性がある
+
+                let fields = {};
+
+                if (item.fields && Array.isArray(item.fields)) {
+                    // fields配列形式の場合
+                    item.fields.forEach(field => {
+                        fields[field.key || field.id] = field.value;
+                    });
+                } else {
+                    // フラットなオブジェクト形式の場合
+                    fields = { ...item };
+                    delete fields.id;
+                    delete fields.createdAt;
+                    delete fields.updatedAt;
+                }
+
+                // 位置情報の正規化
+                if (fields.location) {
+                    if (fields.location.coordinates) {
+                        // GeoJSON Point形式
+                        fields.longitude = fields.location.coordinates[0];
+                        fields.latitude = fields.location.coordinates[1];
+                    } else if (typeof fields.location === 'object') {
+                        fields.latitude = fields.location.lat || fields.location.latitude;
+                        fields.longitude = fields.location.lng || fields.location.longitude;
+                    }
+                }
+
+                // lat/lng が直接ある場合
+                if (item.lat !== undefined) fields.latitude = item.lat;
+                if (item.lng !== undefined) fields.longitude = item.lng;
+                if (item.latitude !== undefined) fields.latitude = item.latitude;
+                if (item.longitude !== undefined) fields.longitude = item.longitude;
+
+                return {
+                    id: item.id || item._id || `item-${Date.now()}-${Math.random()}`,
+                    fields: {
+                        name: fields.title || fields.name || 'Unnamed Facility',
+                        category: fields.category || fields.type || 'other',
+                        description: fields.description || fields.content || '',
+                        latitude: parseFloat(fields.latitude) || 34.6901,
+                        longitude: parseFloat(fields.longitude) || 135.1956,
+                        status: fields.status || 'open',
+                        address: fields.address || '',
+                        phone: fields.phone || '',
+                        services: fields.services || '',
+                        isEmergency: fields.isEmergency === true,
+                        is24Hours: fields.is24Hours === true,
+                        photos: fields.photos || fields.images || [],
+                        createdAt: item.createdAt || fields.createdAt || new Date().toISOString()
+                    }
+                };
+            }
+
+            // デモデータ（API未接続時のフォールバック）
+            getDemoData() {
+                return {
+                    items: [
+                        {
+                            id: 'demo-1',
+                            fields: {
+                                name: 'Arusha Lutheran Medical Centre',
+                                category: 'hospital',
+                                description: 'ALMC was founded to be model of faith-based healthcare and to be a center of excellence and an example of the level of quality of care which the church community could provide to the larger Arusha communit',
+                                latitude: -3.3664132,
+                                longitude: 36.6824078,
+                                is24Hours: true,
+                                isEmergency: true,
+                                services: ['emergency', 'outpatient', 'pediatrics', 'diagnostics_imaging'],
+                                status: 'open',
+                                address: 'Makao Mapya Rd, Arusha, Tanzania',
+                                phone: '+255 272548030',
+                                createdAt: '2026-04-22T09:30:00Z'
+                            }
+                        },
+                        {
+                            id: 'demo-2',
+                            fields: {
+                                name: 'TABASAMU DENTAL CLINIC',
+                                category: 'dental',
+                                description: 'TABASAMU DENTAL CLINIC provides comprehensive dental care services to the community, including preventive, restorative, and cosmetic dentistry.',
+                                latitude: -3.3667741,
+                                longitude: 36.6855681,
+                                is24Hours: false,
+                                isEmergency: false,
+                                services: ['dental'],
+                                status: 'closed',
+                                address: 'JMMQ+77 Arusha, Tanzania',
+                                phone: '+255716900715',
+                                createdAt: '2026-04-22T09:30:00Z'
+                            }
+                        },
+                        {
+                            id: 'demo-3',
+                            fields: {
+                                name: 'QUAS PHARMACY, ARUSHA PHARMACY, BEST PHARMACY',
+                                category: 'pharmacy',
+                                description: 'QUAS PHARMACY, ARUSHA PHARMACY, BEST PHARMACY provides a range of pharmaceutical services and products to the community.',
+                                latitude: -3.4018185,
+                                longitude: 36.7051333,
+                                is24Hours: true,
+                                isEmergency: false,
+                                services: ['pharmacy'],
+                                status: 'open',
+                                address: 'NGARENARO DARAJANI, Arusha 23105',
+                                phone: '+255 689 522 905',
+                                createdAt: '2026-04-22T09:30:00Z'
+                            }
+                        },
+                        {
+                            id: 'demo-4',
+                            fields: {
+                                name: 'Lancet Laboratories Arusha',
+                                category: 'laboratory',
+                                description: "Lancet Laboratories Arusha provides comprehensive diagnostic and laboratory services to support healthcare providers and patients in the region.",
+                                latitude: -3.3726069,
+                                longitude: 36.6884602,
+                                is24Hours: false,
+                                isEmergency: false,
+                                services: ['diagnostics_imaging'],
+                                status: 'open',
+                                address: 'JPF2+HX Arusha, Tanzania',
+                                phone: '+255 752 831 538',
+                                createdAt: '2026-04-22T09:30:00Z'
+                            }
+                        },
+                        {
+                            id: 'demo-5',
+                            fields: {
+                                name: 'AVINTACARE MEDICAL CENTRE Health Center',
+                                category: 'clinic',
+                                description: 'AVINTACARE MEDICAL CENTRE Health Center provides a range of healthcare services with a focus on outpatient care and diagnostics.',
+                                latitude: -3.3761123,
+                                longitude: 36.6998176,
+                                is24Hours: false,
+                                isEmergency: false,
+                                services: ['maternity', 'outpatient', 'pediatrics', 'others'],
+                                status: 'open',
+                                address: 'JPF2+HX Arusha, Tanzania',
+                                phone: '+255 789 357 077',
+                                createdAt: '2026-04-22T09:30:00Z'
+                            }
+                        },
+                        {
+                            id: 'demo-6',
+                            fields: {
+                                name: 'SMART POLYCLINIC',
+                                category: 'clinic',
+                                description: 'SMART POLYCLINIC provides a range of healthcare services with a focus on outpatient care and diagnostics.',
+                                latitude: -3.3703363,
+                                longitude: 36.7000091,
+                                is24Hours: false,
+                                isEmergency: false,
+                                services: ['outpatient', 'diagnostics_imaging'],
+                                status: 'closed',
+                                address: 'JMHX+9G Arusha, Tanzania',
+                                phone: '+255 767506527',
+                                createdAt: '2026-04-22T09:30:00Z'
+                            }
+                        },
+                        {
+                            id: 'demo-7',
+                            fields: {
+                                name: 'Hayaat emergency and diagnostics center',
+                                category: 'hospital',
+                                description: 'Hayaat emergency and diagnostics center provides comprehensive healthcare services with a focus on emergency care and diagnostics.',
+                                latitude: -3.3703363,
+                                longitude: 36.7000091,
+                                is24Hours: true,
+                                isEmergency: true,
+                                services: ['emergency', 'diagnostics_imaging'],
+                                status: 'open',
+                                address: 'Kaunda Rd, Arusha 19766',
+                                phone: '+255 784 383 555',
+                                createdAt: '2026-04-22T09:30:00Z'
+                            }
+                        }
+                    ],
+                    totalCount: 7
+                };
+            }
+        }
+
+        // ============================================
+        // Application State
+        // ============================================
+        const state = {
+            map: null,
+            markers: [],
+            selectedLocation: null,
+            selectedCategory: null,
+            uploadedPhotos: [],
+            facilities: [],
+            currentFilter: 'all',
+            pickingLocation: false,
+            tempMarker: null
+        };
+
+        const cmsClient = new ReEarthCMSClient(CMS_CONFIG);
+
+        // ============================================
+        // Map Initialization
+        // ============================================
+        function initMap() {
+            // Arusha, Tanzania
+            const arushaCenter = [-3.3869, 36.6830];
+
+            state.map = L.map('map', {
+                center: arushaCenter,
+                zoom: 13,
+                zoomControl: false
+            });
+
+            // Tile layer added by layer switcher after DOMContentLoaded
+
+            L.control.zoom({ position: 'topright' }).addTo(state.map);
+
+            state.map.on('click', handleMapClick);
+            loadFacilities();
+        }
+
+        // ============================================
+        // Data Loading
+        // ============================================
+        async function loadFacilities() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.classList.add('loading');
+
+            try {
+                // Re:Earth CMS Public APIからデータ取得
+                const data = await cmsClient.getHealthServiceFacilities();
+
+                state.facilities = data.items || [];
+                renderMarkers();
+                renderFacilitiesList();
+                updateStats();
+                updateConnectionStatus(cmsClient.isLiveData);
+                updateDataSourceIndicator(cmsClient.isLiveData);
+
+                console.log(`[App] Loaded ${state.facilities.length} facilities (live: ${cmsClient.isLiveData})`);
+            } catch (error) {
+                console.error('[App] Failed to load reports:', error);
+                showToast('データの読み込みに失敗しました', '⚠️');
+                updateConnectionStatus(false);
+            } finally {
+                refreshBtn.classList.remove('loading');
+            }
+        }
+
+        // ============================================
+        // Connection Status UI
+        // ============================================
+        function updateConnectionStatus(isConnected) {
+            const badge = document.getElementById('connectionStatus');
+            if (isConnected) {
+                badge.classList.remove('error');
+                badge.innerHTML = `
+          <span class="status-dot"></span>
+          <span>CMS接続中</span>
+        `;
+            } else {
+                badge.classList.add('error');
+                badge.innerHTML = `
+          <span class="status-dot"></span>
+          <span>デモモード</span>
+        `;
+            }
+        }
+
+        function updateDataSourceIndicator(isLive) {
+            const indicator = document.getElementById('dataSource');
+            if (isLive) {
+                indicator.className = 'data-source live';
+                indicator.textContent = '✓ ライブデータ取得中';
+            } else {
+                indicator.className = 'data-source demo';
+                indicator.textContent = '⚠ デモデータ使用中';
+            }
+        }
+
+        // ============================================
+        // Map Markers
+        // ============================================
+        function renderMarkers() {
+            // 既存マーカーをクリア
+            state.markers.forEach(marker => marker.remove());
+            state.markers = [];
+
+            // フィルタリング
+            const filtered = state.currentFilter === 'all'
+                ? state.facilities
+                : state.facilities.filter(r => r.fields.category === state.currentFilter);
+
+            // マーカー追加
+            filtered.forEach(report => {
+                const { latitude, longitude, category, name, status } = report.fields;
+
+                if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+                    console.warn('[App] Invalid coordinates for report:', report.id);
+                    return;
+                }
+
+                const iconHtml = getCategoryIcon(category);
+                const icon = L.divIcon({
+                    html: `<div class="custom-marker ${category}">${iconHtml}</div>`,
+                    className: '',
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18]
+                });
+
+                const marker = L.marker([latitude, longitude], { icon })
+                    .addTo(state.map)
+                    .on('click', () => showFacilityDetail(report));
+
+                state.markers.push(marker);
+            });
+
+            console.log(`[App] Rendered ${state.markers.length} markers`);
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                hospital: '🏥',
+                clinic: '🩺',
+                pharmacy: '💊',
+                laboratory: '🔬',
+                dental: '🦷',
+                other: '📍'
+            };
+            return icons[category] || '📍';
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                hospital: 'Hospital',
+                clinic: 'Clinic',
+                pharmacy: 'Pharmacy',
+                laboratory: 'Laboratory',
+                dental: 'Dental',
+                other: 'Other'
+            };
+            return names[category] || 'Other';
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                open: 'Open',
+                closed: 'Closed',
+            };
+            return labels[status] || status;
+        }
+
+        // ============================================
+        // Report Submission (デモ用 - 実際はIntegration API使用)
+        // ============================================
+        async function submitHealthFacility(formData) {
+            showLoading(true);
+
+            try {
+                // 1. まず写真をアップロードしてアセットIDを取得
+                let assetIds = [];
+
+                if (state.uploadedPhotos.length > 0) {
+                    console.log('[App] Uploading photos...');
+
+                    try {
+                        // ファイルオブジェクトを取得
+                        const files = state.uploadedPhotos.map(p => p.file).filter(f => f);
+
+                        if (files.length > 0) {
+                            // 複数アセットをアップロード
+                            const uploadResult = await cmsClient.uploadAssets(files);
+
+                            if (uploadResult.uploaded && uploadResult.uploaded.length > 0) {
+                                assetIds = uploadResult.uploaded.map(asset => asset.id);
+                                console.log('[App] Uploaded asset IDs:', assetIds);
+                            }
+
+                            if (uploadResult.errors && uploadResult.errors.length > 0) {
+                                console.warn('[App] Some uploads failed:', uploadResult.errors);
+                            }
+                        }
+                    } catch (uploadError) {
+                        console.warn('[App] Photo upload failed:', uploadError.message);
+                        // アップロード失敗しても投稿は続行
+                    }
+                }
+
+                // 2. フィールドを準備（アセットID含む）
+                const fields = {
+                    name: formData.get('name'),
+                    category: state.selectedCategory,
+                    description: formData.get('description') || '',
+                    latitude: state.selectedLocation.lat,
+                    longitude: state.selectedLocation.lng,
+                    address: formData.get('address') || '',
+                    phone: formData.get('phone') || '',
+                    services: formData.getAll('services'),
+                    isEmergency: document.getElementById('isEmergency').checked,
+                    is24Hours: document.getElementById('is24Hours').checked,
+                    status: 'open',
+                    assetIds: assetIds,
+                    createdAt: new Date().toISOString()
+                };
+
+                // 3. サーバーAPI経由で投稿
+                let createdItem = null;
+                let isLivePost = false;
+
+                try {
+                    // まずサーバーの設定状態を確認
+                    const configStatus = await cmsClient.checkServerConfig();
+                    if (!configStatus.ready) {
+                        console.warn('[App] Server not configured, using local mode');
+                        throw new Error('サーバーが設定されていません');
+                    }
+
+                    console.log("fields", fields);
+                    createdItem = await cmsClient.createItem(fields);
+                    isLivePost = true;
+                    console.log('[App] Report submitted via server API:', createdItem);
+                } catch (apiError) {
+                    console.warn('[App] API post failed, using local mode:', apiError.message);
+
+                    // ローカルモードでシミュレート
+                    createdItem = {
+                        id: `local-${Date.now()}`,
+                        fields: {
+                            ...fields,
+                            photos: state.uploadedPhotos.map(p => p.url)  // ローカルURLを使用
+                        }
+                    };
+                }
+
+                // 4. ローカル状態に追加
+                const newFacility = {
+                    id: createdItem.id || `local-${Date.now()}`,
+                    fields: createdItem.fields || {
+                        ...fields,
+                        photos: state.uploadedPhotos.map(p => p.url)
+                    }
+                };
+
+                state.facilities.unshift(newFacility);
+
+                renderMarkers();
+                renderFacilitiesList();
+                updateStats();
+                resetForm();
+
+                if (isLivePost) {
+                    const photoMsg = assetIds.length > 0 ? `（写真${assetIds.length}枚を含む）` : '';
+                    showToast(`投稿がCMSに送信されました！${photoMsg}`, '✓');
+                } else {
+                    showToast('投稿が送信されました（ローカルモード）', '✓');
+                }
+
+                console.log(`[App] Report submitted (live: ${isLivePost}):`, newFacility);
+            } catch (error) {
+                console.error('[App] Failed to submit report:', error);
+                showToast('投稿の送信に失敗しました: ' + error.message, '⚠️');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ============================================
+        // Facilities List
+        // ============================================
+        function renderFacilitiesList() {
+            const container = document.getElementById('facilitiesList');
+            const filtered = state.currentFilter === 'all'
+                ? state.facilities
+                : state.facilities.filter(r => r.fields.category === state.currentFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+            <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+            <p>投稿がありません</p>
+          </div>
+        `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(report => {
+                const { name, category, description, status, address, phone } = report.fields;
+                const statusClass = status === 'public' ? 'open' : status;
+
+                return `
+          <div class="report-card" onclick="showFacilityDetail(state.facilities.find(r => r.id === '${report.id}'))">
+            <div class="report-card-header">
+              <div class="report-card-icon ${category}">${getCategoryIcon(category)}</div>
+              <div class="report-card-info">
+                <div class="report-card-title">${escapeHtml(name)}</div>
+                <div class="report-card-meta">${getCategoryName(category)}${phone ? ' · 📞 ' + escapeHtml(phone) : ''}</div>
+              </div>
+              <div class="report-card-status status-${statusClass}">${getStatusLabel(status)}</div>
+            </div>
+            <div class="report-card-desc">${escapeHtml(description || '説明なし')}</div>
+          </div>
+        `;
+            }).join('');
+        }
+
+        // ============================================
+        // Facility Detail Modal
+        // ============================================
+        function showFacilityDetail(report) {
+            if (!report) return;
+
+            const { name, category, description, status, services, address, phone, latitude, longitude, photos, isEmergency, is24Hours } = report.fields;
+
+            document.getElementById('modalIcon').innerHTML = getCategoryIcon(category);
+            document.getElementById('modalIcon').className = `modal-icon report-card-icon ${category}`;
+            document.getElementById('modalTitle').textContent = name;
+            document.getElementById('modalSubtitle').innerHTML = [
+                getCategoryName(category),
+                address ? `📍 ${escapeHtml(address)}` : '',
+                phone ? `📞 ${escapeHtml(phone)}` : ''
+            ].filter(Boolean).join(' · ');
+
+            let bodyHtml = `<p>${escapeHtml(description || '詳細説明なし')}</p>`;
+
+            if (services && services.length > 0) {
+                bodyHtml += `<div style="margin-top: 14px;">
+                  <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px;">Services</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${services.map(s => `<span style="padding: 3px 10px; border-radius: 20px; background: rgba(26,75,124,0.08); color: var(--kobe-blue); font-size: 12px; font-weight: 500;">${escapeHtml(s)}</span>`).join('')}
+                  </div>
+                </div>`;
+            }
+
+            if (photos && photos.length > 0) {
+                bodyHtml += `<div style="margin-top: 16px;">`;
+                photos.forEach(photo => {
+                    const photoUrl = typeof photo === 'string' ? photo : photo.url;
+                    if (photoUrl) {
+                        bodyHtml += `<img src="${escapeHtml(photoUrl)}" class="modal-photo" alt="" onerror="this.style.display='none'">`;
+                    }
+                });
+                bodyHtml += `</div>`;
+            }
+
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+
+            const statusClass = status === 'public' ? 'open' : status;
+
+            document.getElementById('modalMeta').innerHTML = `
+        <div class="modal-meta-item">
+          <span class="report-card-status status-${statusClass}">${getStatusLabel(status)}</span>
+        </div>
+        ${isEmergency ? `<div class="modal-meta-item"><span>🚨</span><span>Emergency Service</span></div>` : ''}
+        ${is24Hours ? `<div class="modal-meta-item"><span>🕐</span><span>Open 24 Hours</span></div>` : ''}
+      `;
+
+            document.getElementById('modalOverlay').classList.add('active');
+
+            // マップを該当位置に移動
+            if (latitude && longitude) {
+                state.map.setView([latitude, longitude], 16);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // ============================================
+        // Map Click Handler
+        // ============================================
+        function handleMapClick(e) {
+            const { lat, lng } = e.latlng;
+
+            // 一時マーカーを削除
+            if (state.tempMarker) {
+                state.tempMarker.remove();
+            }
+
+            // 新しい一時マーカー
+            const icon = L.divIcon({
+                html: `<div class="click-marker"></div>`,
+                className: '',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
+
+            state.tempMarker = L.marker([lat, lng], { icon }).addTo(state.map);
+
+            // 位置を保存
+            state.selectedLocation = { lat, lng };
+
+            // UIを更新
+            const picker = document.getElementById('locationPicker');
+            picker.classList.add('has-location');
+            picker.innerHTML = `
+        <div class="location-icon">✓</div>
+        <div class="location-text">位置が選択されました</div>
+        <div class="location-coords">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
+      `;
+
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+
+            validateForm();
+        }
+
+        // ============================================
+        // Category Selection
+        // ============================================
+        function selectCategory(category) {
+            document.querySelectorAll('.category-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector(`[data-category="${category}"]`).classList.add('selected');
+            state.selectedCategory = category;
+            document.getElementById('category').value = category;
+            validateForm();
+        }
+
+        // ============================================
+        // Photo Upload
+        // ============================================
+        function handlePhotoUpload(files) {
+            const container = document.getElementById('photoUpload');
+
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                if (state.uploadedPhotos.length >= 4) return;
+
+                const id = Date.now() + Math.random();
+                const url = URL.createObjectURL(file);
+
+                state.uploadedPhotos.push({ id, file, url });
+
+                const preview = document.createElement('div');
+                preview.className = 'photo-preview';
+                preview.innerHTML = `
+          <img src="${url}" alt="Preview">
+          <button class="photo-remove" onclick="removePhoto(${id})">✕</button>
+        `;
+
+                container.insertBefore(preview, container.querySelector('.photo-add'));
+            });
+        }
+
+        function removePhoto(id) {
+            const index = state.uploadedPhotos.findIndex(p => p.id === id);
+            if (index > -1) {
+                URL.revokeObjectURL(state.uploadedPhotos[index].url);
+                state.uploadedPhotos.splice(index, 1);
+            }
+
+            const previews = document.querySelectorAll('.photo-preview');
+            previews[index]?.remove();
+        }
+
+        // ============================================
+        // Form Validation & Reset
+        // ============================================
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const hasCategory = !!state.selectedCategory;
+            const hasLocation = !!state.selectedLocation;
+
+            const isValid = name && hasCategory && hasLocation;
+            document.getElementById('submitBtn').disabled = !isValid;
+        }
+
+        function resetForm() {
+            document.getElementById('reportForm').reset();
+            state.selectedCategory = null;
+            state.selectedLocation = null;
+            state.uploadedPhotos.forEach(p => URL.revokeObjectURL(p.url));
+            state.uploadedPhotos = [];
+
+            if (state.tempMarker) {
+                state.tempMarker.remove();
+                state.tempMarker = null;
+            }
+
+            document.querySelectorAll('.category-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            const picker = document.getElementById('locationPicker');
+            picker.classList.remove('has-location');
+            picker.innerHTML = `
+        <div class="location-icon">🗺️</div>
+        <div class="location-text">地図をクリックして位置を選択</div>
+      `;
+
+            const photoContainer = document.getElementById('photoUpload');
+            photoContainer.querySelectorAll('.photo-preview').forEach(el => el.remove());
+
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        // ============================================
+        // Stats
+        // ============================================
+        function updateStats() {
+            const total = state.facilities.length;
+            const open = state.facilities.filter(r => r.fields.status === 'open').length;
+            const closed = state.facilities.filter(r => r.fields.status === 'closed').length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('openCount').textContent = open;
+            document.getElementById('closedCount').textContent = closed;
+        }
+
+        // ============================================
+        // UI Helpers
+        // ============================================
+        function showToast(message, icon = '✓') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            document.getElementById('toastIcon').textContent = icon;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('active', show);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================
+        // Event Listeners
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+
+            // Tab switching
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+
+                    tab.classList.add('active');
+                    document.getElementById(`tab-${tab.dataset.tab}`).style.display = 'block';
+                });
+            });
+
+            // Category selection
+            document.querySelectorAll('.category-option').forEach(option => {
+                option.addEventListener('click', () => selectCategory(option.dataset.category));
+            });
+
+            // Photo upload
+            document.getElementById('photoInput').addEventListener('change', (e) => {
+                handlePhotoUpload(e.target.files);
+            });
+
+            // Form validation on input
+            document.getElementById('name').addEventListener('input', validateForm);
+
+            // Form submission
+            document.getElementById('reportForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitHealthFacility(new FormData(e.target));
+            });
+
+            // Filter chips
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    state.currentFilter = chip.dataset.filter;
+                    renderMarkers();
+                    renderFacilitiesList();
+                });
+            });
+
+            // Modal close
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+            document.getElementById('modalOverlay').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) closeModal();
+            });
+
+            // Map controls
+            document.getElementById('locateBtn').addEventListener('click', () => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            state.map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+                        },
+                        () => showToast('位置情報を取得できませんでした', '⚠️')
+                    );
+                }
+            });
+
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                loadFacilities();
+                showToast('データを更新中...', '🔄');
+            });
+
+            // Layer control
+            const tileLayers = {
+                street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19
+                }),
+                satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+                    minNativeZoom: 3,
+                    maxZoom: 19
+                }),
+                terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors',
+                    maxZoom: 17
+                }),
+                dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+                    maxZoom: 19
+                })
+            };
+
+            let activeLayer = tileLayers.street;
+            activeLayer.addTo(state.map);
+
+            const layersBtn = document.getElementById('layersBtn');
+            const layerPanel = document.getElementById('layerPanel');
+
+            layersBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                layerPanel.classList.toggle('open');
+            });
+
+            document.addEventListener('click', () => {
+                layerPanel.classList.remove('open');
+            });
+
+            layerPanel.addEventListener('click', (e) => e.stopPropagation());
+
+            document.querySelectorAll('.layer-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const layerKey = option.dataset.layer;
+                    if (!tileLayers[layerKey]) return;
+
+                    // Swap tile layer
+                    state.map.removeLayer(activeLayer);
+                    activeLayer = tileLayers[layerKey];
+                    activeLayer.addTo(state.map);
+                    activeLayer.bringToBack();
+
+                    // Update active state
+                    document.querySelectorAll('.layer-option').forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+
+                    layerPanel.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
