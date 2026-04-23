@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -50,14 +50,14 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-tabs">
-                <button class="sidebar-tab active" data-tab="report">📝 Map Health Facility</button>
+                <button class="sidebar-tab active" data-tab="facility">📝 Map Health Facility</button>
                 <button class="sidebar-tab" data-tab="list">📋 List of Health Facilities</button>
             </div>
 
             <div class="sidebar-content">
-                <!-- Report Form Tab -->
-                <div class="tab-content active" id="tab-report">
-                    <div class="report-form">
+                <!-- Facility Form Tab -->
+                <div class="tab-content active" id="tab-facility">
+                    <div class="facility-form">
                         <div class="form-header">
                             <h2>Add Nearby Health Facility</h2>
                             <p>Pin the location of a nearby health facility on the map and submit its details. It will
@@ -65,7 +65,7 @@
                                 health services.</p>
                         </div>
 
-                        <form id="reportForm">
+                        <form id="facilityForm">
                             <div class="form-group">
                                 <label class="form-label">Select Facility Category *</label>
                                 <div class="category-grid">
@@ -74,7 +74,7 @@
                                         <div class="category-name">Hospital</div>
                                     </div>
                                     <div class="category-option" data-category="clinic">
-                                        <div class="category-icon">🩺</div>
+                                        <div class="category-icon">🫀</div>
                                         <div class="category-name">Clinic</div>
                                     </div>
                                     <div class="category-option" data-category="pharmacy">
@@ -172,14 +172,14 @@
                                     <label class="form-label">Emergency Service</label>
                                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                                         <input type="checkbox" id="isEmergency" name="isEmergency" value="true">
-                                        <span>Available</span>
+                                        <span style="font-size: 12px;">Available</span>
                                     </label>
                                 </div>
                                 <div class="form-group" style="flex:1; min-width:0;">
-                                    <label class="form-label">Open 24 Hours</label>
+                                    <label class="form-label">Hours</label>
                                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                                         <input type="checkbox" id="is24Hours" name="is24Hours" value="true">
-                                        <span>Open 24 Hours</span>
+                                        <span style="font-size: 12px;">Open 24 Hours</span>
                                     </label>
                                 </div>
                             </div>
@@ -227,11 +227,11 @@
                         </div>
                     </div>
                     <hr class="stats-divider">
-                    <div class="reports-list">
-                        <div class="reports-filter">
+                    <div class="facilitys-list">
+                        <div class="facilitys-filter">
                             <button class="filter-chip active" data-filter="all">All</button>
                             <button class="filter-chip" data-filter="hospital">🏥 Hospital</button>
-                            <button class="filter-chip" data-filter="clinic">🩺 Clinic</button>
+                            <button class="filter-chip" data-filter="clinic">🫀 Clinic</button>
                             <button class="filter-chip" data-filter="pharmacy">💊 Pharmacy</button>
                             <button class="filter-chip" data-filter="laboratory">🔬 Laboratory</button>
                             <button class="filter-chip" data-filter="dental">🦷 Dental</button>
@@ -251,10 +251,10 @@
 
             <!-- Map Controls -->
             <div class="map-controls">
-                <button class="map-control-btn" id="locateBtn" title="現在地">📍</button>
-                <button class="map-control-btn" id="refreshBtn" title="更新">🔄</button>
+                <button class="map-control-btn" id="locateBtn" title="My Location">📍</button>
+                <button class="map-control-btn" id="refreshBtn" title="Refresh">🔄</button>
                 <div style="position: relative;">
-                    <button class="map-control-btn" id="layersBtn" title="レイヤー">🗂️</button>
+                    <button class="map-control-btn" id="layersBtn" title="Layers"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></button>
                     <div class="layer-panel" id="layerPanel">
                         <div class="layer-panel-title">Map Style</div>
                         <div class="layer-option active" data-layer="street">
@@ -327,15 +327,15 @@
                     <span class="legend-label">Hospital</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-marker" style="background: var(--warning-amber);">🩺</div>
+                    <div class="legend-marker" style="background: var(--warning-amber);">🫀</div>
                     <span class="legend-label">Clinic</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-marker" style="background: #8b4513;">💊</div>
+                    <div class="legend-marker" style="background: #3b82f6;">💊</div>
                     <span class="legend-label">Pharmacy</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-marker" style="background: #3b82f6;">🔬</div>
+                    <div class="legend-marker" style="background: #725400;">🔬</div>
                     <span class="legend-label">Laboratory</span>
                 </div>
                 <div class="legend-item">
@@ -369,34 +369,31 @@
     <!-- Toast -->
     <div class="toast" id="toast">
         <span class="toast-icon" id="toastIcon">✓</span>
-        <span class="toast-message" id="toastMessage">投稿が送信されました</span>
+        <span class="toast-message" id="toastMessage">Submitted successfully</span>
     </div>
 
     <!-- Loading -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text">送信中...</div>
+        <div class="loading-text">Submitting...</div>
     </div>
 
     <script>
         // ============================================
-        // Re:Earth CMS API Configuration - 実API設定
+        // Re:Earth CMS API Configuration
         // ============================================
         const CMS_CONFIG = {
-            // 実際のRe:Earth CMS APIエンドポイント
             baseUrl: 'https://api.cms.reearth.io',
 
-            // Public API エンドポイント (GET用 - 認証不要)
+            // Public API endpoints (GET - no auth required)
             endpoints: {
                 healthFacilities: '/api/p/Beatrice/assignment/health-services',
                 assets: '/api/p/Beatrice/assignment/assets'
             },
 
-            // ローカルサーバーAPI (POST用)
-            // インテグレーショントークンはサーバー側で管理
+            // Local server API (POST) - integration token managed server-side
             serverApi: {
-                baseUrl: '',  // 同一オリジン（空文字で現在のホスト）
-                // 別サーバーの場合は 'http://localhost:3000' などを指定
+                baseUrl: '',  // same origin; set to e.g. 'http://localhost:3000' for a separate server
                 endpoints: {
                     facilities: '/api/facilities',
                     assets: '/api/assets',
@@ -416,10 +413,8 @@
                 this.isLiveData = false;
             }
 
-            // 危険箇所データ取得
             async getHealthServiceFacilities() {
                 const url = `${this.config.baseUrl}${this.config.endpoints.healthFacilities}`;
-                console.log(`[CMS] GET ${url}`);
 
                 try {
                     const response = await fetch(url, {
@@ -434,11 +429,8 @@
                     }
 
                     const data = await response.json();
-                    console.log('[CMS] Live data received:', data);
                     this.isLiveData = true;
-                    return this.getDemoData();
-
-                    // return this.normalizeApiResponse(data);
+                    return this.normalizeApiResponse(data);
 
                 } catch (error) {
                     console.warn('[CMS] API error, using demo data:', error.message);
@@ -447,10 +439,8 @@
                 }
             }
 
-            // アセットデータ取得
             async getAssets() {
                 const url = `${this.config.baseUrl}${this.config.endpoints.assets}`;
-                console.log(`[CMS] GET ${url}`);
 
                 try {
                     const response = await fetch(url, {
@@ -469,10 +459,8 @@
                 }
             }
 
-            // サーバーAPIの設定状態を確認
             async checkServerConfig() {
                 const serverBase = this.config.serverApi?.baseUrl || '';
-                console.log(`[CMS] Checking server config at ${serverBase}${this.config.serverApi.endpoints.configStatus}`);
                 const url = `${serverBase}${this.config.serverApi.endpoints.configStatus}`;
 
                 try {
@@ -485,13 +473,9 @@
                 }
             }
 
-            // サーバーAPI経由で新規アイテムを作成
             async createItem(fields) {
                 const serverBase = this.config.serverApi?.baseUrl || '';
                 const url = `${serverBase}${this.config.serverApi.endpoints.facilities}`;
-
-                console.log(`[CMS] POST ${url}`);
-                console.log('[CMS] Fields:', fields);
 
                 try {
                     const response = await fetch(url, {
@@ -503,10 +487,7 @@
                         body: JSON.stringify({ fields })
                     });
 
-                    console.log(`[CMS] Response status: ${response.status}`);
-
                     const responseData = await response.json();
-                    console.log('[CMS] Response data:', responseData);
 
                     if (!response.ok) {
                         throw new Error(responseData.message || `HTTP ${response.status}`);
@@ -519,13 +500,26 @@
                 }
             }
 
-            // サーバーAPI経由でアセット（画像）をアップロード
+            async deleteFacility(id) {
+                const serverBase = this.config.serverApi?.baseUrl || '';
+                const url = `${serverBase}${this.config.serverApi.endpoints.facilities}`;
+                try {
+                    const res = await fetch(`${url}/${id}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    state.facilities = state.facilities.filter(f => f.id !== id);
+                    renderMarkers();
+                    renderFacilitiesList();
+                    updateStats();
+                    showToast('Facility deleted', '🗑️');
+                } catch (error) {
+                    console.error('[App] Failed to delete facility:', error);
+                    showToast('Failed to delete', '⚠️');
+                }
+            }
+
             async uploadAsset(file) {
                 const serverBase = this.config.serverApi?.baseUrl || '';
                 const url = `${serverBase}${this.config.serverApi.endpoints.assets}`;
-
-                console.log(`[CMS] POST ${url} (asset upload)`);
-                console.log('[CMS] File:', file.name, file.type, file.size);
 
                 try {
                     const formData = new FormData();
@@ -536,10 +530,7 @@
                         body: formData
                     });
 
-                    console.log(`[CMS] Response status: ${response.status}`);
-
                     const responseData = await response.json();
-                    console.log('[CMS] Response data:', responseData);
 
                     if (!response.ok) {
                         throw new Error(responseData.message || `HTTP ${response.status}`);
@@ -552,13 +543,9 @@
                 }
             }
 
-            // 複数アセットをアップロード
             async uploadAssets(files) {
                 const serverBase = this.config.serverApi?.baseUrl || '';
                 const url = `${serverBase}${this.config.serverApi.endpoints.assetsMultiple}`;
-
-                console.log(`[CMS] POST ${url} (multiple assets upload)`);
-                console.log('[CMS] Files count:', files.length);
 
                 try {
                     const formData = new FormData();
@@ -571,10 +558,7 @@
                         body: formData
                     });
 
-                    console.log(`[CMS] Response status: ${response.status}`);
-
                     const responseData = await response.json();
-                    console.log('[CMS] Response data:', responseData);
 
                     if (!response.ok) {
                         throw new Error(responseData.message || `HTTP ${response.status}`);
@@ -587,10 +571,7 @@
                 }
             }
 
-            // APIレスポンスを正規化
             normalizeApiResponse(data) {
-                // Re:Earth CMS Public APIのレスポンス形式に対応
-                // 形式: { results: [...], totalCount: n, ... } または配列直接
 
                 let items = [];
 
@@ -602,7 +583,6 @@
                     items = data.items;
                 }
 
-                // 各アイテムのフィールドを正規化
                 const normalizedItems = items.map(item => this.normalizeItem(item));
 
                 return {
@@ -611,30 +591,23 @@
                 };
             }
 
-            // 個別アイテムの正規化
             normalizeItem(item) {
-                // Re:Earth CMSのアイテム構造に対応
-                // フィールドは直接プロパティとして、または fields 配列として返される可能性がある
 
                 let fields = {};
 
                 if (item.fields && Array.isArray(item.fields)) {
-                    // fields配列形式の場合
                     item.fields.forEach(field => {
                         fields[field.key || field.id] = field.value;
                     });
                 } else {
-                    // フラットなオブジェクト形式の場合
                     fields = { ...item };
                     delete fields.id;
                     delete fields.createdAt;
                     delete fields.updatedAt;
                 }
 
-                // 位置情報の正規化
                 if (fields.location) {
                     if (fields.location.coordinates) {
-                        // GeoJSON Point形式
                         fields.longitude = fields.location.coordinates[0];
                         fields.latitude = fields.location.coordinates[1];
                     } else if (typeof fields.location === 'object') {
@@ -643,7 +616,6 @@
                     }
                 }
 
-                // lat/lng が直接ある場合
                 if (item.lat !== undefined) fields.latitude = item.lat;
                 if (item.lng !== undefined) fields.longitude = item.lng;
                 if (item.latitude !== undefined) fields.latitude = item.latitude;
@@ -660,7 +632,7 @@
                         status: fields.status || 'open',
                         address: fields.address || '',
                         phone: fields.phone || '',
-                        services: fields.services || '',
+                        services: Array.isArray(fields.services) ? fields.services : [],
                         isEmergency: fields.isEmergency === true,
                         is24Hours: fields.is24Hours === true,
                         photos: fields.photos || fields.images || [],
@@ -669,7 +641,6 @@
                 };
             }
 
-            // デモデータ（API未接続時のフォールバック）
             getDemoData() {
                 return {
                     items: [
@@ -844,7 +815,6 @@
             refreshBtn.classList.add('loading');
 
             try {
-                // Re:Earth CMS Public APIからデータ取得
                 const data = await cmsClient.getHealthServiceFacilities();
 
                 state.facilities = data.items || [];
@@ -853,11 +823,9 @@
                 updateStats();
                 updateConnectionStatus(cmsClient.isLiveData);
                 updateDataSourceIndicator(cmsClient.isLiveData);
-
-                console.log(`[App] Loaded ${state.facilities.length} facilities (live: ${cmsClient.isLiveData})`);
             } catch (error) {
-                console.error('[App] Failed to load reports:', error);
-                showToast('データの読み込みに失敗しました', '⚠️');
+                console.error('[App] Failed to load facilities:', error);
+                showToast('Failed to load data.', '⚠️');
                 updateConnectionStatus(false);
             } finally {
                 refreshBtn.classList.remove('loading');
@@ -873,13 +841,13 @@
                 badge.classList.remove('error');
                 badge.innerHTML = `
           <span class="status-dot"></span>
-          <span>CMS接続中</span>
+          <span>Connected to CMS</span>
         `;
             } else {
                 badge.classList.add('error');
                 badge.innerHTML = `
           <span class="status-dot"></span>
-          <span>デモモード</span>
+          <span>Demo Mode</span>
         `;
             }
         }
@@ -888,10 +856,10 @@
             const indicator = document.getElementById('dataSource');
             if (isLive) {
                 indicator.className = 'data-source live';
-                indicator.textContent = '✓ ライブデータ取得中';
+                indicator.textContent = '✓ Live data';
             } else {
                 indicator.className = 'data-source demo';
-                indicator.textContent = '⚠ デモデータ使用中';
+                indicator.textContent = '⚠ Demo data';
             }
         }
 
@@ -899,21 +867,20 @@
         // Map Markers
         // ============================================
         function renderMarkers() {
-            // 既存マーカーをクリア
             state.markers.forEach(marker => marker.remove());
             state.markers = [];
 
-            // フィルタリング
             const filtered = state.currentFilter === 'all'
                 ? state.facilities
                 : state.facilities.filter(r => r.fields.category === state.currentFilter);
 
-            // マーカー追加
-            filtered.forEach(report => {
-                const { latitude, longitude, category, name, status } = report.fields;
+                console.log(filtered)
+
+            filtered.forEach(facility => {
+                const { latitude, longitude, category, name, status } = facility.fields;
 
                 if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-                    console.warn('[App] Invalid coordinates for report:', report.id);
+                    console.warn('[App] Invalid coordinates for facility:', facility.id);
                     return;
                 }
 
@@ -927,18 +894,17 @@
 
                 const marker = L.marker([latitude, longitude], { icon })
                     .addTo(state.map)
-                    .on('click', () => showFacilityDetail(report));
+                    .on('click', () => showFacilityDetail(facility));
 
                 state.markers.push(marker);
             });
 
-            console.log(`[App] Rendered ${state.markers.length} markers`);
         }
 
         function getCategoryIcon(category) {
             const icons = {
                 hospital: '🏥',
-                clinic: '🩺',
+                clinic: '🫀',
                 pharmacy: '💊',
                 laboratory: '🔬',
                 dental: '🦷',
@@ -968,29 +934,24 @@
         }
 
         // ============================================
-        // Report Submission (デモ用 - 実際はIntegration API使用)
+        // Facility Submission
         // ============================================
         async function submitHealthFacility(formData) {
             showLoading(true);
 
             try {
-                // 1. まず写真をアップロードしてアセットIDを取得
                 let assetIds = [];
 
                 if (state.uploadedPhotos.length > 0) {
-                    console.log('[App] Uploading photos...');
 
                     try {
-                        // ファイルオブジェクトを取得
                         const files = state.uploadedPhotos.map(p => p.file).filter(f => f);
 
                         if (files.length > 0) {
-                            // 複数アセットをアップロード
                             const uploadResult = await cmsClient.uploadAssets(files);
 
                             if (uploadResult.uploaded && uploadResult.uploaded.length > 0) {
                                 assetIds = uploadResult.uploaded.map(asset => asset.id);
-                                console.log('[App] Uploaded asset IDs:', assetIds);
                             }
 
                             if (uploadResult.errors && uploadResult.errors.length > 0) {
@@ -999,11 +960,9 @@
                         }
                     } catch (uploadError) {
                         console.warn('[App] Photo upload failed:', uploadError.message);
-                        // アップロード失敗しても投稿は続行
                     }
                 }
 
-                // 2. フィールドを準備（アセットID含む）
                 const fields = {
                     name: formData.get('name'),
                     category: state.selectedCategory,
@@ -1020,36 +979,29 @@
                     createdAt: new Date().toISOString()
                 };
 
-                // 3. サーバーAPI経由で投稿
                 let createdItem = null;
                 let isLivePost = false;
 
                 try {
-                    // まずサーバーの設定状態を確認
                     const configStatus = await cmsClient.checkServerConfig();
                     if (!configStatus.ready) {
                         console.warn('[App] Server not configured, using local mode');
-                        throw new Error('サーバーが設定されていません');
+                        throw new Error('Server is not configured');
                     }
 
-                    console.log("fields", fields);
                     createdItem = await cmsClient.createItem(fields);
                     isLivePost = true;
-                    console.log('[App] Report submitted via server API:', createdItem);
                 } catch (apiError) {
                     console.warn('[App] API post failed, using local mode:', apiError.message);
-
-                    // ローカルモードでシミュレート
                     createdItem = {
                         id: `local-${Date.now()}`,
                         fields: {
                             ...fields,
-                            photos: state.uploadedPhotos.map(p => p.url)  // ローカルURLを使用
+                            photos: state.uploadedPhotos.map(p => p.url)
                         }
                     };
                 }
 
-                // 4. ローカル状態に追加
                 const newFacility = {
                     id: createdItem.id || `local-${Date.now()}`,
                     fields: createdItem.fields || {
@@ -1066,16 +1018,15 @@
                 resetForm();
 
                 if (isLivePost) {
-                    const photoMsg = assetIds.length > 0 ? `（写真${assetIds.length}枚を含む）` : '';
-                    showToast(`投稿がCMSに送信されました！${photoMsg}`, '✓');
+                    const photoMsg = assetIds.length > 0 ? ` (${assetIds.length} photo${assetIds.length > 1 ? 's' : ''})` : '';
+                    showToast(`Submitted to CMS!${photoMsg}`, '✓');
                 } else {
-                    showToast('投稿が送信されました（ローカルモード）', '✓');
+                    showToast('Submitted (local mode)', '✓');
                 }
 
-                console.log(`[App] Report submitted (live: ${isLivePost}):`, newFacility);
             } catch (error) {
-                console.error('[App] Failed to submit report:', error);
-                showToast('投稿の送信に失敗しました: ' + error.message, '⚠️');
+                console.error('[App] Failed to submit facility:', error);
+                showToast('Failed to submit: ' + error.message, '⚠️');
             } finally {
                 showLoading(false);
             }
@@ -1093,28 +1044,29 @@
             if (filtered.length === 0) {
                 container.innerHTML = `
           <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-            <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-            <p>投稿がありません</p>
+            <div style="font-size: 48px; margin-bottom: 16px;">🏥</div>
+            <p>No facilities found</p>
           </div>
         `;
                 return;
             }
 
-            container.innerHTML = filtered.map(report => {
-                const { name, category, description, status, address, phone } = report.fields;
+            container.innerHTML = filtered.map(facility => {
+                const { name, category, description, status, address, phone } = facility.fields;
                 const statusClass = status === 'public' ? 'open' : status;
 
                 return `
-          <div class="report-card" onclick="showFacilityDetail(state.facilities.find(r => r.id === '${report.id}'))">
-            <div class="report-card-header">
-              <div class="report-card-icon ${category}">${getCategoryIcon(category)}</div>
-              <div class="report-card-info">
-                <div class="report-card-title">${escapeHtml(name)}</div>
-                <div class="report-card-meta">${getCategoryName(category)}${phone ? ' · 📞 ' + escapeHtml(phone) : ''}</div>
+          <div class="facility-card" onclick="showFacilityDetail(state.facilities.find(r => r.id === '${facility.id}'))">
+            <div class="facility-card-header">
+              <div class="facility-card-icon ${category}">${getCategoryIcon(category)}</div>
+              <div class="facility-card-info">
+                <div class="facility-card-title">${escapeHtml(name)}</div>
+                <div class="facility-card-meta">${getCategoryName(category)}${phone ? ' · 📞 ' + escapeHtml(phone) : ''}</div>
               </div>
-              <div class="report-card-status status-${statusClass}">${getStatusLabel(status)}</div>
+              <div class="facility-card-status status-${statusClass}">${getStatusLabel(status)}</div>
+              <button class="facility-card-delete" onclick="event.stopPropagation(); cmsClient.deleteFacility('${facility.id}')" title="Delete">🗑️</button>
             </div>
-            <div class="report-card-desc">${escapeHtml(description || '説明なし')}</div>
+            <div class="facility-card-desc">${escapeHtml(description || 'No description')}</div>
           </div>
         `;
             }).join('');
@@ -1123,13 +1075,14 @@
         // ============================================
         // Facility Detail Modal
         // ============================================
-        function showFacilityDetail(report) {
-            if (!report) return;
+        function showFacilityDetail(facility) {
+            if (!facility) return;
 
-            const { name, category, description, status, services, address, phone, latitude, longitude, photos, isEmergency, is24Hours } = report.fields;
+            const { name, category, description, status, services, address, phone, latitude, longitude, photos, isEmergency, is24Hours } = facility.fields;
+            console.log(facility.fields)
 
             document.getElementById('modalIcon').innerHTML = getCategoryIcon(category);
-            document.getElementById('modalIcon').className = `modal-icon report-card-icon ${category}`;
+            document.getElementById('modalIcon').className = `modal-icon facility-card-icon ${category}`;
             document.getElementById('modalTitle').textContent = name;
             document.getElementById('modalSubtitle').innerHTML = [
                 getCategoryName(category),
@@ -1137,7 +1090,7 @@
                 phone ? `📞 ${escapeHtml(phone)}` : ''
             ].filter(Boolean).join(' · ');
 
-            let bodyHtml = `<p>${escapeHtml(description || '詳細説明なし')}</p>`;
+            let bodyHtml = `<p>${escapeHtml(description || 'No description available')}</p>`;
 
             if (services && services.length > 0) {
                 bodyHtml += `<div style="margin-top: 14px;">
@@ -1165,7 +1118,7 @@
 
             document.getElementById('modalMeta').innerHTML = `
         <div class="modal-meta-item">
-          <span class="report-card-status status-${statusClass}">${getStatusLabel(status)}</span>
+          <span class="facility-card-status status-${statusClass}">${getStatusLabel(status)}</span>
         </div>
         ${isEmergency ? `<div class="modal-meta-item"><span>🚨</span><span>Emergency Service</span></div>` : ''}
         ${is24Hours ? `<div class="modal-meta-item"><span>🕐</span><span>Open 24 Hours</span></div>` : ''}
@@ -1173,7 +1126,6 @@
 
             document.getElementById('modalOverlay').classList.add('active');
 
-            // マップを該当位置に移動
             if (latitude && longitude) {
                 state.map.setView([latitude, longitude], 16);
             }
@@ -1183,18 +1135,17 @@
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
+
         // ============================================
         // Map Click Handler
         // ============================================
         function handleMapClick(e) {
             const { lat, lng } = e.latlng;
 
-            // 一時マーカーを削除
             if (state.tempMarker) {
                 state.tempMarker.remove();
             }
 
-            // 新しい一時マーカー
             const icon = L.divIcon({
                 html: `<div class="click-marker"></div>`,
                 className: '',
@@ -1204,15 +1155,13 @@
 
             state.tempMarker = L.marker([lat, lng], { icon }).addTo(state.map);
 
-            // 位置を保存
             state.selectedLocation = { lat, lng };
 
-            // UIを更新
             const picker = document.getElementById('locationPicker');
             picker.classList.add('has-location');
             picker.innerHTML = `
         <div class="location-icon">✓</div>
-        <div class="location-text">位置が選択されました</div>
+        <div class="location-text">Location selected</div>
         <div class="location-coords">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
       `;
 
@@ -1285,7 +1234,7 @@
         }
 
         function resetForm() {
-            document.getElementById('reportForm').reset();
+            document.getElementById('facilityForm').reset();
             state.selectedCategory = null;
             state.selectedLocation = null;
             state.uploadedPhotos.forEach(p => URL.revokeObjectURL(p.url));
@@ -1304,7 +1253,7 @@
             picker.classList.remove('has-location');
             picker.innerHTML = `
         <div class="location-icon">🗺️</div>
-        <div class="location-text">地図をクリックして位置を選択</div>
+        <div class="location-text">Click on the map to select a location</div>
       `;
 
             const photoContainer = document.getElementById('photoUpload');
@@ -1382,7 +1331,7 @@
             document.getElementById('name').addEventListener('input', validateForm);
 
             // Form submission
-            document.getElementById('reportForm').addEventListener('submit', (e) => {
+            document.getElementById('facilityForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 submitHealthFacility(new FormData(e.target));
             });
@@ -1411,14 +1360,14 @@
                         (pos) => {
                             state.map.setView([pos.coords.latitude, pos.coords.longitude], 16);
                         },
-                        () => showToast('位置情報を取得できませんでした', '⚠️')
+                        () => showToast('Could not get your location', '⚠️')
                     );
                 }
             });
 
             document.getElementById('refreshBtn').addEventListener('click', () => {
                 loadFacilities();
-                showToast('データを更新中...', '🔄');
+                showToast('Refreshing data...', '🔄');
             });
 
             // Layer control
